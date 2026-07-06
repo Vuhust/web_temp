@@ -1,6 +1,14 @@
+import {
+  isValidVietnamPhone,
+  normalizeVietnamPhone,
+  VIETNAM_PHONE_ERROR,
+} from "@/lib/vietnam-phone";
+
 export function isValidPhone(phone: string): boolean {
-  return /^(0|\+84)[3|5|7|8|9][0-9]{8}$/.test(phone.replace(/\s/g, ""));
+  return isValidVietnamPhone(phone);
 }
+
+export { normalizeVietnamPhone, VIETNAM_PHONE_ERROR };
 
 export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -24,7 +32,7 @@ export function validateAddress(data: {
     errors.push({ field: "fullName", message: "Vui lòng nhập họ tên" });
   }
   if (!isValidPhone(data.phone)) {
-    errors.push({ field: "phone", message: "Số điện thoại không hợp lệ" });
+    errors.push({ field: "phone", message: VIETNAM_PHONE_ERROR });
   }
   if (!data.provinceCode) {
     errors.push({ field: "provinceCode", message: "Vui lòng chọn tỉnh/thành" });

@@ -3,12 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCartStore } from "@/store/cart";
+import { useHydrated } from "@/hooks/useHydrated";
 import { formatPrice } from "@/lib/formatter";
 import { Button } from "@/components/common/Button";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { FREE_SHIPPING_TEXT } from "@/lib/constants";
 
 export default function CartPage() {
+  const hydrated = useHydrated();
   const {
     items,
     selectedIds,
@@ -23,6 +25,15 @@ export default function CartPage() {
   const selectedTotal = getTotal();
   const allSelected = items.length > 0 && selectedIds.length === items.length;
   const someSelected = selectedIds.length > 0 && !allSelected;
+
+  if (!hydrated) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold text-slate-900">Giỏ hàng</h1>
+        <p className="mt-1 text-slate-500">Đang tải...</p>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

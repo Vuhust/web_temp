@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ShoppingBag, User, Menu, X, Search } from "lucide-react";
 import { APP_NAME } from "@/lib/constants";
 import { useCartStore } from "@/store/cart";
+import { useHydrated } from "@/hooks/useHydrated";
 import { cn } from "@/lib/helpers";
 
 const navLinks = [
@@ -16,6 +17,7 @@ const navLinks = [
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const hydrated = useHydrated();
   const itemCount = useCartStore((s) => s.getItemCount());
 
   return (
@@ -55,7 +57,7 @@ export function Header() {
             className="relative rounded-full p-2 text-slate-500 hover:bg-slate-100"
           >
             <ShoppingBag className="h-5 w-5" />
-            {itemCount > 0 && (
+            {hydrated && itemCount > 0 && (
               <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary-500 text-[10px] font-bold text-white">
                 {itemCount}
               </span>

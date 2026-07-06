@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-06T06:59:43.288Z",
+  "generatedAt": "2026-07-06T07:29:04.897Z",
   "provinceCount": 34,
   "wardCount": 3321,
   "schema": "province → ward (2-level, NQ 2025)"

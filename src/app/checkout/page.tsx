@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useCartStore } from "@/store/cart";
+import { useHydrated } from "@/hooks/useHydrated";
 import { orderService } from "@/services/order.service";
 import { AddressForm } from "@/features/checkout/components/AddressForm";
 import { formatPrice } from "@/lib/formatter";
@@ -14,6 +15,7 @@ import { CheckCircle, CreditCard, Banknote } from "lucide-react";
 import type { Address, Order } from "@/types";
 
 export default function CheckoutPage() {
+  const hydrated = useHydrated();
   const { items, selectedIds, getSelectedItems, getTotal, removeItems } = useCartStore();
   const checkoutItems = getSelectedItems();
   const total = getTotal();
@@ -30,6 +32,15 @@ export default function CheckoutPage() {
       setStep("success");
     },
   });
+
+  if (!hydrated && step !== "success") {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold text-slate-900">Thanh toán</h1>
+        <p className="mt-2 text-slate-500">Đang tải...</p>
+      </div>
+    );
+  }
 
   if (checkoutItems.length === 0 && step !== "success") {
     return (

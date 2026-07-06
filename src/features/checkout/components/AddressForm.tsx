@@ -14,7 +14,8 @@ import {
   getGoogleMapsEmbedUrlFromAddress,
   getGoogleMapsLinkFromAddress,
 } from "@/lib/formatter";
-import { validateAddress } from "@/lib/validator";
+import { validateAddress, normalizeVietnamPhone } from "@/lib/validator";
+import { VIETNAM_PHONE_PLACEHOLDER } from "@/lib/vietnam-phone";
 
 interface AddressFormProps {
   onSubmit: (address: Omit<Address, "id">) => void;
@@ -78,7 +79,10 @@ export function AddressForm({ onSubmit, loading }: AddressFormProps) {
       return;
     }
     setErrors({});
-    onSubmit({ ...form });
+    onSubmit({
+      ...form,
+      phone: normalizeVietnamPhone(form.phone),
+    });
   };
 
   return (
@@ -96,10 +100,13 @@ export function AddressForm({ onSubmit, loading }: AddressFormProps) {
           <Input
             label="Số điện thoại"
             name="phone"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
             error={errors.phone}
-            placeholder="0901234567"
+            placeholder={VIETNAM_PHONE_PLACEHOLDER}
           />
         </div>
 

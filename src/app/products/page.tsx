@@ -1,13 +1,13 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { productService } from "@/services/product.service";
 import { ProductCard } from "@/features/product/components/ProductCard";
 import { Loading } from "@/components/common/Loading";
 import { Pagination } from "@/components/common/Pagination";
 import { CATEGORY_LABELS } from "@/lib/constants";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Search } from "lucide-react";
 import type { ProductCategory } from "@/types";
@@ -22,11 +22,27 @@ const categories: { id: ProductCategory | ""; label: string }[] = [
 
 function ProductsContent() {
   const searchParams = useSearchParams();
-  const categoryParam = searchParams.get("category") || "";
-  const [category, setCategory] = useState(categoryParam);
+  const router = useRouter();
+  const pathname = usePathname();
+  const category = (searchParams.get("category") || "") as ProductCategory | "";
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search);
+
+  useEffect(() => {
+    setPage(1);
+  }, [category]);
+
+  const updateCategory = (next: ProductCategory | "") => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next) {
+      params.set("category", next);
+    } else {
+      params.delete("category");
+    }
+    const query = params.toString();
+    router.push(query ? `${pathname}?${query}` : pathname);
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["products", category, page, debouncedSearch],
@@ -55,10 +71,7 @@ function ProductsContent() {
           {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => {
-                setCategory(cat.id);
-                setPage(1);
-              }}
+              onClick={() => updateCategory(cat.id)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 category === cat.id
                   ? "bg-gradient-to-r from-primary-500 to-accent-600 text-white shadow-md"
