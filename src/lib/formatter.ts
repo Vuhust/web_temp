@@ -28,12 +28,30 @@ export function cn(...classes: (string | boolean | undefined | null)[]): string 
   return classes.filter(Boolean).join(" ");
 }
 
+export function buildMapAddress(
+  street: string,
+  wardName: string,
+  provinceName: string
+): string {
+  return [street, wardName, provinceName, "Việt Nam"].filter(Boolean).join(", ");
+}
+
 export function getGoogleMapsEmbedUrl(lat: number, lng: number): string {
   return `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
 }
 
 export function getGoogleMapsLink(lat: number, lng: number): string {
   return `https://www.google.com/maps?q=${lat},${lng}`;
+}
+
+export function getGoogleMapsEmbedUrlFromAddress(address: string): string {
+  const q = encodeURIComponent(address);
+  return `https://maps.google.com/maps?q=${q}&hl=vi&z=16&output=embed`;
+}
+
+export function getGoogleMapsLinkFromAddress(address: string): string {
+  const q = encodeURIComponent(address);
+  return `https://www.google.com/maps/search/?api=1&query=${q}`;
 }
 
 export function calculateDiscount(original: number, current: number): number {

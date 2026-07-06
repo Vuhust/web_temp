@@ -7,9 +7,13 @@ import { Button } from "@/components/common/Button";
 import { Modal } from "@/components/common/Modal";
 import { SearchableSelect } from "@/components/common/SearchableSelect";
 import { MapPin, ExternalLink } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import type { Address } from "@/types";
-import { getGoogleMapsEmbedUrl, getGoogleMapsLink } from "@/lib/formatter";
+import {
+  buildMapAddress,
+  getGoogleMapsEmbedUrlFromAddress,
+  getGoogleMapsLinkFromAddress,
+} from "@/lib/formatter";
 import { validateAddress } from "@/lib/validator";
 
 interface AddressFormProps {
@@ -30,7 +34,6 @@ export function AddressForm({ onSubmit, loading }: AddressFormProps) {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showMap, setShowMap] = useState(false);
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const { data: provinces } = useQuery({
     queryKey: ["provinces"],
@@ -42,16 +45,6 @@ export function AddressForm({ onSubmit, loading }: AddressFormProps) {
     queryFn: () => addressService.getWards(form.provinceCode),
     enabled: !!form.provinceCode,
   });
-
-  useEffect(() => {
-    if (form.wardCode) {
-      addressService
-        .getCoordinates(form.wardCode, form.provinceCode)
-        .then(setCoords);
-    } else {
-      setCoords(null);
-    }
-  }, [form.wardCode, form.provinceCode]);
 
   const provinceOptions = useMemo(
     () => provinces?.map((p) => ({ value: p.code, label: p.name })) ?? [],
@@ -68,6 +61,11 @@ export function AddressForm({ onSubmit, loading }: AddressFormProps) {
     return parts.join(", ");
   }, [form.street, form.wardName, form.provinceName]);
 
+  const mapAddress = useMemo(
+    () => buildMapAddress(form.street, form.wardName, form.provinceName),
+    [form.street, form.wardName, form.provinceName]
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors = validateAddress(form);
@@ -80,7 +78,7 @@ export function AddressForm({ onSubmit, loading }: AddressFormProps) {
       return;
     }
     setErrors({});
-    onSubmit({ ...form, lat: coords?.lat, lng: coords?.lng });
+    onSubmit({ ...form });
   };
 
   return (
@@ -162,20 +160,20 @@ export function AddressForm({ onSubmit, loading }: AddressFormProps) {
           placeholder="Ghi chú thêm cho shipper..."
         />
 
-        {addressPreview && form.wardCode && (
+        {form.wardCode && form.provinceName && (
           <div className="flex items-center gap-3 rounded-xl bg-accent-50 p-4">
             <MapPin className="h-5 w-5 shrink-0 text-accent-600" />
-            <div className="flex-1 text-sm text-slate-600">{addressPreview}</div>
-            {coords && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowMap(true)}
-              >
-                Xem bản đồ
-              </Button>
-            )}
+            <div className="flex-1 text-sm text-slate-600">
+              {addressPreview || `${form.wardName}, ${form.provinceName}`}
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowMap(true)}
+            >
+              Xem bản đồ
+            </Button>
           </div>
         )}
 
@@ -190,16 +188,19 @@ export function AddressForm({ onSubmit, loading }: AddressFormProps) {
         title="Vị trí giao hàng"
         size="lg"
       >
-        {coords && (
+        {mapAddress && (
           <div>
+            <p className="mb-3 text-sm text-slate-600">{mapAddress}</p>
             <iframe
-              src={getGoogleMapsEmbedUrl(coords.lat, coords.lng)}
+              key={mapAddress}
+              src={getGoogleMapsEmbedUrlFromAddress(mapAddress)}
               className="h-80 w-full rounded-xl border-0"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
+              title="Bản đồ giao hàng"
             />
             <a
-              href={getGoogleMapsLink(coords.lat, coords.lng)}
+              href={getGoogleMapsLinkFromAddress(mapAddress)}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-accent-600 hover:text-accent-700"
