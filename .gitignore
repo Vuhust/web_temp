@@ -52,3 +52,5 @@ next-env.d.ts
 
 # cursor (local workspace)
 .cursor/
+
+.package-lock.json
